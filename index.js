@@ -55,7 +55,7 @@ function startPrompt() {
             case "Add an Employee":
                 addEmployee();
                 break;
-            case "Update an Employee":
+            case "Update an Employee Role":
                 updateEmployee();
                 break;
             case "End Program":
@@ -106,7 +106,7 @@ function addDepartment() {
         function (err, res) {
             if (err) throw err;
             console.table(res);
-            firstPrompt();
+            startPrompt();
         })
     })
 }
@@ -150,7 +150,7 @@ function addRole() {
             if (err) throw err;
             console.table(res);
             console.log(res.affectedRows + " role inserted.\n");
-            firstPrompt();
+            startPrompt();
         });
     });
 });
@@ -207,10 +207,10 @@ function addEmployee() {
         },
         function (err, res) {
             if (err) {
-                console.log("Error adding employee: " + err.message);
+                console.log("Error adding employee: " + err);
             } else {
             console.log(res.affectedRows + " employee added.\n");
-            firstPrompt();
+            startPrompt();
     }});
     });
 });
@@ -218,5 +218,43 @@ function addEmployee() {
 }
 
 function updateEmployee() {
-
+   console.log("Updating an employee's role...\n") ;
+   connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee", function (err, res) {
+    if (err) throw err;
+    const employeeChoices = res.map(employee => ({
+        name: employee.name,
+        value: employee.id,
+    }));
+    connection.query("SELECT id, title FROM role", function (err, res) {
+        if (err) throw err;
+        const roleChoices = res.map(role => ({
+            name: role.title, 
+            value: role.id,
+        }));
+        inquirer.prompt([
+            {
+            name: "employeeId", 
+            type: "list",
+            message: "Which employee's role do you wish to update?",
+            choices: employeeChoices
+            },
+            {
+                name: "roleId",
+                type: "list",
+                message: "What role do you wish to change this employee to?",
+                choices: roleChoices
+            }
+        ])
+        .then(function (answer) {
+            connection.query("UPDATE employee SET role_id = ? WHERE id = ?", [answer.roleId, answer.employeeId], function (err, res) {
+                if (err) {
+                    console.log("Error updating employee role: " + err.message);
+                } else {
+                    console.log(res.affectedRows + "employee updated. \n");
+                    startPrompt();
+                }
+            });
+        });
+    });
+   });
 }
