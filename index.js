@@ -27,7 +27,7 @@ function startPrompt() {
         choices: [
             "View All Departments",
             "View All Roles",
-            "View all Employees",
+            "View All Employees",
             "Add a Department",
             "Add a role",
             "Add an Employee",
@@ -71,22 +71,25 @@ function viewDepartments() {
    connection.query("SELECT * FROM department", function(err, res) {
     if (err) throw err;
     console.table(res);
+    startPrompt()
    });
 }
 
 function viewRoles() {
     console.log("Viewing all Roles...\n");
-    connection.query("SELECT * FROM role", function(err, res) {
+    connection.query("SELECT role.title AS 'Title', role.id AS 'Role ID', department.name AS 'Department', role.salary AS 'Salary' FROM role JOIN department ON role.department_id = department.id", function(err, res) {
         if (err) throw err;
         console.table(res);
+        startPrompt()
     });
 }
 
 function viewEmployees() {
     console.log("Viewing all Employees...\n");
-    connection.query("SELECT * FROM employee", function(err, res) {
+    connection.query("SELECT employee.id AS 'Employee ID', employee.first_name AS 'First Name', employee.last_name AS 'Last Name', role.title AS 'Title', department.name AS 'Department', role.salary AS 'Salary', CONCAT(manager.first_name, ' ', manager.last_name) AS 'Manager' FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON employee.manager_id = manager.id", function(err, res) {
         if (err) throw err;
         console.table(res);
+        startPrompt()
     });
 }
 
