@@ -158,7 +158,7 @@ function addRole() {
 }
 
 function addEmployee() {
-
+    console.log("Adding a new employee...\n");
 }
 
 function updateEmployee() {
