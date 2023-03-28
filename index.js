@@ -1,9 +1,8 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-const Connection = require("mysql2/typings/mysql/lib/Connection");
 require("console.table");
 
-const db = mysql.createConnection(
+const connection = mysql.createConnection(
     {
         host: 'localhost',
         user: 'root',
@@ -53,7 +52,7 @@ function startPrompt() {
             case "Add a role":
                 addRole();
                 break;
-            case "add an Employee":
+            case "Add an Employee":
                 addEmployee();
                 break;
             case "Update an Employee":
@@ -114,7 +113,47 @@ function addDepartment() {
 
 function addRole() {
     console.log("Adding a new role...\n");
+    connection.query("SELECT id, name FROM department", function(err, res) {
+        if (err) throw err;
+        const deptChoices = res.map(department => ({
+            value: department.id,
+            name: department.name
+        }));
     
+    inquirer
+    .prompt([
+        {
+            name: "title",
+            type: "input",
+            message: "What is the title of the new role?",
+        },
+        {
+            name: "salary",
+            type: "input",
+            message: "What is the salary for the new role?",
+        },
+        {
+            name: "departmentId",
+            type: "list",
+            message: "What department does the new role fall under?",
+            choices: deptChoices,
+        }
+    ])
+    .then(function (answer) {
+        connection.query("INSERT INTO role SET ?",
+        {
+            title: answer.title,
+            salary: answer.salary,
+            department_id: answer.departmentId,
+        },
+        function (err, res) {
+            if (err) throw err;
+            console.table(res);
+            console.log(res.affectedRows + " role inserted.\n");
+            firstPrompt();
+        });
+    });
+});
 
 }
 
