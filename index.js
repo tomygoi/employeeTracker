@@ -159,6 +159,62 @@ function addRole() {
 
 function addEmployee() {
     console.log("Adding a new employee...\n");
+    connection.query("SELECT id, title FROM role", function (err,res) {
+        if (err) throw err;
+        const roleChoices = res.map(role => ({
+            name: role.title,
+            value: role.id,
+        }));
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee", function (err, res) {
+        if (err) throw err;
+        const managerChoices = res.map(manager => ({
+            name: manager.name,
+            value: manager.id,
+        }));
+    
+    inquirer
+    .prompt([
+        {
+            name: "firstName",
+            type: "input",
+            message: "What is the employee's first name?"
+        },
+        {
+            name: "lastName",
+            type: "input",
+            message: "What is the employee's last name?"
+        },
+        {
+            name: "roleId",
+            type: "list",
+            message: "What is the employee's role?",
+            choices: roleChoices
+        },
+        {
+            name: "managerId",
+            type: "list",
+            message: "Who is the employee's manager?",
+            choices: managerChoices
+        }
+
+    ])
+    .then(function (answer) {
+        connection.query("INSERT INTO employee set ?", {
+            first_name: answer.firstName,
+            last_name: answer.lastName,
+            role_id: answer.roleId,
+            manager_id: answer.managerId
+        },
+        function (err, res) {
+            if (err) {
+                console.log("Error adding employee: " + err.message);
+            } else {
+            console.log(res.affectedRows + " employee added.\n");
+            firstPrompt();
+    }});
+    });
+});
+});
 }
 
 function updateEmployee() {
